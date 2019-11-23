@@ -17,6 +17,19 @@ show2darray (double **arr, int rows, int columns)
   return;
 }
 
+void swap(double *xp, double *yp)
+{
+    double temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+void swapi(int *xp, int *yp)
+{
+    int temp = *xp;
+    *xp = *yp;
+    *yp = temp;
+}
+
 double
 distance (double *one, double *two, int n)
 {
@@ -24,48 +37,67 @@ distance (double *one, double *two, int n)
   double b = 0;
   for (i = 1; i < n; ++i)
     b = b + ((one[i] - two[i]) * (one[i] - two[i]));
-  return sqrt (b);
+  b = sqrt(b);
+  return b;
 }
 
 int
 classify (double *instance, double **data, int c, int r, int n)
 {
-  double candidates[27];
+  double candidates[87];
   int i = 0;
+  double alpha = -1.4;
   int t = 0;
+  double euler = 2.7182818284;
   int j = 0;
-  int cluster[27] = { 0 };
-  for (i = 0; i < n; ++i)
+  int ii = 0;
+  int jj = 0;
+  int min_idx = 0;
+  int cluster[87] = { 0 };
+  for (i = 0; i <= n; ++i)
     candidates[i] = 999999.0;
-  int zc = 0;
-  int oc = 0;
+  double zc = 0;
+  double oc = 0;
+  double tc = 0;
   for (i = 0; i < r; ++i)
     {
       t = distance (instance, data[i], c);
       if (t < candidates[n - 1])
 	{
-	  for (j = 0; j < n; ++j)
-	    {
-	      if (t < candidates[j])
-		{
-		  candidates[j] = t;
-		  cluster[j] = i;
-		  break;
-		}
-	    }
+
+		  candidates[n-1] = t;
+		  cluster[n-1] = i;
+
+      for (ii = 0; ii < n-1; ii++)
+    {
+
+        min_idx = ii;
+        for (jj = ii+1; jj < n; jj++)
+          if (candidates[jj] < candidates[min_idx])
+            min_idx = jj;
+
+
+        swap(&candidates[min_idx], &candidates[ii]); swapi(&cluster[min_idx], &cluster[ii]);
+    }
+
+
 	}
     }
   for (i = 0; i < n; ++i)
     {
-      if (data[cluster[i]][0] == 0)
-	++zc;
-      else
-	++oc;
+      if (data[cluster[i]][0] == 1) oc=oc+pow(euler,(alpha*pow(candidates[i],1))); //oc=oc+(10/candidates[i]);
+	//++oc;
+      else if (data[cluster[i]][0] == 2) tc=tc+pow(euler,(alpha*pow(candidates[i],1))); //tc=tc+(10/candidates[i]);
+  //++tc;
+      else zc=zc+pow(euler,(alpha*pow(candidates[i],1))); //zc=zc+(10/candidates[i]);
+	//++zc;
     }
-  if (zc > oc)
+  if (zc > oc && zc > tc)
     return 0;
-  else
+  else if (oc > zc && oc > tc)
     return 1;
+  else
+    return 2;
 }
 
 int
@@ -174,6 +206,7 @@ main (int argc, char **argv)
     }
   fclose (fpp);
   int misclass = 0;
+  int corclass = 0;
   fclose (fp);
 //show2darray(data,n,ccount);
 //show2darray(instances,ninstances-1000,ccount);
@@ -192,12 +225,13 @@ main (int argc, char **argv)
 	  ++misclass;
 	  printf ("Misclassified instance number %d\n", i + 2);
 	}
+      else {printf ("Correctly classified instance number %d\n", i + 2); ++corclass;}
     }
   float accuracy =
     (float) (100 -
 	     (float) (((float) (misclass) / (float) (ninstances)) * 100));
-  printf ("Out of %d instances, %d were misclassified.\n", ninstances,
-	  misclass);
+  printf ("\nOut of %d instances, %d were classified correctly and %d were misclassified.\n", ninstances,
+	  corclass,misclass);
   printf ("The overall accuracy is %.2f%%\n", accuracy);
 
   return 0;
