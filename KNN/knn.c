@@ -208,6 +208,7 @@ main (int argc, char **argv)
   int misclass = 0;
   int corclass = 0;
   fclose (fp);
+  int confuze[3][3]={0,0,0,0,0,0,0,0,0};
 //show2darray(data,n,ccount);
 //show2darray(instances,ninstances-1000,ccount);
 //printf("n = %d\n",n);
@@ -220,7 +221,7 @@ main (int argc, char **argv)
   for (i = 0; i < ninstances; ++i)
     {
       classifications[i] = classify (instances[i], data, ccount, n, ncount);
-      if (classifications[i] != instances[i][0])
+      if(classifications[i] != instances[i][0])
 	{
 	  ++misclass;
 	  printf ("Misclassified instance number %d\n", i + 2);
@@ -230,9 +231,26 @@ main (int argc, char **argv)
   float accuracy =
     (float) (100 -
 	     (float) (((float) (misclass) / (float) (ninstances)) * 100));
-  printf ("\nOut of %d instances, %d were classified correctly and %d were misclassified.\n", ninstances,
+  printf ("\nOut of %d instances, %d were classified correctly and %d were misclassified.\n\n", ninstances,
 	  corclass,misclass);
-  printf ("The overall accuracy is %.2f%%\n", accuracy);
 
+  for(i=0;i<ninstances;++i){
+    if(classifications[i]==0 && instances[i][0]==0) ++confuze[0][0];
+    else if(classifications[i]==0 && instances[i][0]==1) ++confuze[0][1];
+    else if(classifications[i]==0 && instances[i][0]==2) ++confuze[0][2];
+    else if(classifications[i]==1 && instances[i][0]==0) ++confuze[1][0];
+    else if(classifications[i]==1 && instances[i][0]==1) ++confuze[1][1];
+    else if(classifications[i]==1 && instances[i][0]==2) ++confuze[1][2];
+    else if(classifications[i]==2 && instances[i][0]==0) ++confuze[2][0];
+    else if(classifications[i]==2 && instances[i][0]==1) ++confuze[2][1];
+    else ++confuze[2][2];
+  }
+  printf("Precision for Class 0 is %.2f%%\n",100*(float)(confuze[0][0])/(float)(confuze[0][0]+confuze[0][1]+confuze[0][2]));
+  printf("Recall for Class 0 is %.2f%%\n\n",100*(float)(confuze[0][0])/(float)(confuze[0][0]+confuze[1][0]+confuze[2][0]));
+  printf("Precision for Class 1 is %.2f%%\n",100*(float)(confuze[1][1])/(float)(confuze[1][0]+confuze[1][1]+confuze[1][2]));
+  printf("Recall for Class 1 is %.2f%%\n\n",100*(float)(confuze[1][1])/(float)(confuze[0][1]+confuze[1][1]+confuze[2][1]));
+  printf("Precision for Class 2 is %.2f%%\n",100*(float)(confuze[2][2])/(float)(confuze[2][0]+confuze[2][1]+confuze[2][2]));
+  printf("Recall for Class 2 is %.2f%%\n\n",100*(float)(confuze[2][2])/(float)(confuze[0][2]+confuze[1][2]+confuze[2][2]));
+  printf ("The overall accuracy is %.2f%%\n", accuracy);
   return 0;
 }
